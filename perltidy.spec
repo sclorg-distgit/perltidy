@@ -9,7 +9,7 @@
 
 Name:		%{?scl_prefix}perltidy
 Version:	20191203
-Release:	2%{?dist}
+Release:	3%{?dist}
 Summary:	Tool for indenting and re-formatting Perl scripts
 License:	GPLv2+
 URL:		http://perltidy.sourceforge.net/
@@ -21,6 +21,7 @@ BuildRequires:	findutils
 BuildRequires:	make
 BuildRequires:	%{?scl_prefix}perl-generators
 BuildRequires:	%{?scl_prefix}perl-interpreter
+BuildRequires:	%{?scl_prefix}perl(Config)
 BuildRequires:	%{?scl_prefix}perl(ExtUtils::MakeMaker)
 BuildRequires:	sed
 # Module Runtime
@@ -80,6 +81,9 @@ sed -i -e '/^examples\/pt\.bat/d' MANIFEST
 # Remove unwanted exec permissions
 find examples/ lib/ -type f -perm /a+x -exec chmod -c -x {} \;
 
+# Normalize shebangs
+%{?scl:scl enable %{scl} '}perl -MConfig -i -pe %{?scl:'"}'%{?scl:"'}s{^#!/usr/bin/perl}{$Config{startperl}}%{?scl:'"}'%{?scl:"'} examples/*%{?scl:'}
+
 %build
 %{?scl:scl enable %{scl} '}perl Makefile.PL INSTALLDIRS=vendor && make %{?_smp_mflags}%{?scl:'}
 
@@ -105,6 +109,9 @@ find %{buildroot} -type f -name .packlist -delete
 %{_mandir}/man3/Perl::Tidy::Formatter.3*
 
 %changelog
+* Tue Mar 17 2020 Petr Pisar <ppisar@redhat.com> - 20191203-3
+- Normalize shebangs in the examples (bug #1813355)
+
 * Mon Jan 06 2020 Jitka Plesnikova <jplesnik@redhat.com> - 20191203-2
 - SCL
 
